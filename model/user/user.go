@@ -1,6 +1,7 @@
 package user
 
 import (
+	"database/sql"
 	"errors"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"shop-backend/data"
@@ -8,13 +9,12 @@ import (
 	"time"
 )
 
-var ErrorUsernameTaken = errors.New("username taken")
 var ErrorPhoneNumberTaken = errors.New("phone number taken")
 var ErrorEmailTaken = errors.New("email taken")
+var ErrorUserNotFound = errors.New("user not found")
 
 type User struct {
 	ID         string    `db:"id" json:"id"`
-	Username   string    `db:"username" json:"username"`
 	Email      string    `db:"email" json:"email"`
 	Password   string    `db:"password" json:"password"`
 	Phone      string    `db:"phone" json:"phone"`
@@ -32,17 +32,13 @@ func (u *User) Create() error {
 		primitive.NewObjectID().Hex()
 	}
 
-	if u.Username == "" || u.Password == "" {
-		return errors.New("some information missing")
-	}
-
 	if u.CreatedAt.IsZero() {
 		u.CreatedAt = time.Now()
 	}
 	u.UpdatedAt = u.CreatedAt
 
 	db := data.DB()
-	_, err := db.NamedExec("INSERT INTO _user (id, username, email, password, phone,is_verified, created_at, updated_at) VALUES (:id,:username,:email,:password,:phone,:is_verified,:created_at,:updated_at)", u)
+	_, err := db.NamedExec("INSERT INTO _user (id, email, password, phone,is_verified, created_at, updated_at) VALUES (:id,:email,:password,:phone,:is_verified,:created_at,:updated_at)", u)
 
 	if err != nil {
 		if strings.Contains(err.Error(), "phone_key") {
@@ -51,10 +47,21 @@ func (u *User) Create() error {
 		if strings.Contains(err.Error(), "email_key") {
 			return ErrorEmailTaken
 		}
-		if strings.Contains(err.Error(), "username_key") {
-			return ErrorUsernameTaken
-		}
 		return err
 	}
 	return nil
+}
+
+func GetUserByEmailORPhone(email, phone string) (*User, error) {
+	db := data.DB()
+	u := New()
+
+	err := db.Get(u, "SELECT * FROM _user WHERE email = $1 OR phone = $2", email, phone)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrorUserNotFound
+		}
+		return nil, err
+	}
+	return u, nil
 }

@@ -1,6 +1,5 @@
 CREATE TABLE _user (
     id VARCHAR(28) PRIMARY KEY,
-    username VARCHAR(20) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(60) NOT NULL,
     phone VARCHAR(12) UNIQUE NOT NULL,

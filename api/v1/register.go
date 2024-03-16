@@ -14,20 +14,15 @@ import (
 )
 
 type register struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
 	Email    string `json:"email"`
 	Phone    string `json:"phone"`
+	Password string `json:"password"`
 }
 
 func RegisterPOST(e echo.Context) error {
 	body := &register{}
 	if err := e.Bind(body); err != nil {
-		return response.BadRequestError(e, "invalid information input")
-	}
-
-	if body.Username == "" {
-		return response.BadRequestError(e, "invalid username ")
+		return response.BadRequestError(e, "invalid information")
 	}
 
 	if body.Password == "" {
@@ -55,7 +50,6 @@ func RegisterPOST(e echo.Context) error {
 	//add for now email verification later
 	u := user.New()
 	u.ID = primitive.NewObjectID().Hex()
-	u.Username = body.Username
 	u.Password = string(pass)
 	u.Phone = body.Phone
 	u.IsVerified = false
@@ -64,9 +58,6 @@ func RegisterPOST(e echo.Context) error {
 	u.UpdatedAt = u.CreatedAt
 	err = u.Create()
 	if err != nil {
-		if errors.Is(err, user.ErrorUsernameTaken) {
-			return response.OtherErrors(e, response.ErrorUsernameTaken, "")
-		}
 		if errors.Is(err, user.ErrorEmailTaken) {
 			return response.OtherErrors(e, response.ErrorEmailTaken, "")
 		}

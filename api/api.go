@@ -39,4 +39,7 @@ func Init() *echo.Echo {
 
 func apis(group *echo.Group) {
 	group.POST("/register", v1.RegisterPOST)
+	group.POST("/login", v1.LoginPost)
+
+	//protected routes
 }

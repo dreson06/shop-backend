@@ -14,9 +14,9 @@ const (
 	StatusUnauthorized Status = 401
 	StatusServerError  Status = 500
 
-	ErrorUsernameTaken Status = 4001
-	ErrorEmailTaken    Status = 4002
-	ErrorPhoneTaken    Status = 4003
+	ErrorWrongCredentials Status = 4001
+	ErrorEmailTaken       Status = 4002
+	ErrorPhoneTaken       Status = 4003
 )
 
 type response struct {
